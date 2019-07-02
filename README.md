@@ -9,7 +9,6 @@ Go to the root folder and then import entire module by using the following comma
 import-module ./powerfunctionapp
 
 
-
 ####################################################
 
 
