@@ -41,6 +41,11 @@ az eventgrid event-subscription create --name "mt9fileadaptersubscription" --sou
 
 
 
+Deploying function app using REST api 
+
+curl -X POST -u <deployment_user> --data-binary @"<zip_file_path>" https://<app_name>.scm.azurewebsites.net/api/zipdeploy
+
+
 
 
 
