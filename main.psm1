@@ -2,7 +2,7 @@
 Import-Module ./util/util.psm1
 Import-Module Az
 
-function CreateEventSubscriptionEventHook($resourcegroup, $functionName, $subscriptionTitle, $functionCodeName) {
+function CreateEventSubscriptionEventHook($resourcegroup, $functionName, $subscriptionTitle, $functionCodeName, $resourceId) {
 
     Write-Host('Updating app settings!')
 
@@ -15,7 +15,7 @@ function CreateEventSubscriptionEventHook($resourcegroup, $functionName, $subscr
 
     Write-Host($azFuncAccessToken.masterKey)    
 
-    #New-AzEventGridSubscription -EventSubscriptionName $subscriptionTitle -ResourceId "/subscriptions/$(Subscription_id)/resourceGroups/$(env)$(shared_resource_group_name)/providers/Microsoft.Storage/storageaccounts/$(env)$(shared_storage_account)" -endpoint "https://functionName.azurewebsites.net/runtime/webhooks/EventGrid?functionName=$functionCodeName&code=$azFuncAccessToken" -EndpointType webhook -IncludedEventType Microsoft.Storage.BlobCreated 
+    New-AzEventGridSubscription -EventSubscriptionName $subscriptionTitle -ResourceId "$resourceId" -endpoint "https://$functionName.azurewebsites.net/runtime/webhooks/EventGrid?functionName=$functionCodeName&code=$azFuncAccessToken" -EndpointType webhook -IncludedEventType Microsoft.Storage.BlobCreated 
 }
 
 function GetAccessToken() {
