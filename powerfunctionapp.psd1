@@ -9,7 +9,7 @@
 @{
 
 # Script module or binary module file associated with this manifest.
-RootModule = 'test.psm1'
+RootModule = 'main.psm1'
 
 Description = 'Power app function'
 # Version number of this module.
