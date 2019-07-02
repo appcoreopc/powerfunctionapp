@@ -14,8 +14,8 @@ function CreateEventSubscriptionEventHook($resourcegroup, $functionName, $subscr
     $azFuncAccessToken = Invoke-WebRequest "https://$functionName.scm.azurewebsites.net/api/functions/admin/masterkey" -Headers @{"Authorization"="Bearer $token"}
 
     Write-Host($azFuncAccessToken.masterKey)    
-
-    New-AzEventGridSubscription -EventSubscriptionName $subscriptionTitle -ResourceId "$resourceId" -endpoint "https://$functionName.azurewebsites.net/runtime/webhooks/EventGrid?functionName=$functionCodeName&code=$azFuncAccessToken" -EndpointType webhook -IncludedEventType Microsoft.Storage.BlobCreated 
+    
+    $status = New-AzEventGridSubscription -EventSubscriptionName $subscriptionTitle -ResourceId "$resourceId" -endpoint "https://$functionName.azurewebsites.net/runtime/webhooks/EventGrid?functionName=$functionCodeName&code=$azFuncAccessToken" -EndpointType webhook -IncludedEventType Microsoft.Storage.BlobCreated 
 }
 
 function GetAccessToken() {
@@ -31,6 +31,17 @@ function ForceAppSettingsAzureWebJobsSecretStorageType($resourcegroup, $function
     az functionapp config appsettings set --name "$functionName" --resource-group "$resourcegroup" --setting "AzureWebJobsSecretStorageType=Files"
 }
 
+function DeployAppFunction {
+    #PowerShell
+$username = "<deployment_user>"
+$password = "<deployment_password>"
+$filePath = "<zip_file_path>"
+$apiUrl = "https://<app_name>.scm.azurewebsites.net/api/zipdeploy"
+$base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("{0}:{1}" -f $username, $password)))
+$userAgent = "powershell/1.0"
+Invoke-RestMethod -Uri $apiUrl -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -UserAgent $userAgent -Method POST -InFile $filePath -ContentType "multipart/form-data"
+
+}
 
 functionn ApplySecurityPolicyToFunction {
 
