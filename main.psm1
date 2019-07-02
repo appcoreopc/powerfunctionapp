@@ -2,10 +2,12 @@
 Import-Module ./util/util.psm1
 Import-Module Az
 
-function CreateEventSubscriptionEventHook($token, $functionName, $subscriptionTitle, $functionCodeName) {
+function CreateEventSubscriptionEventHook($functionName, $subscriptionTitle, $functionCodeName) {
+
+    $token = GetAccessToken
 
     Write-Host('Creating subscription!')
-    $azFuncAccessToken = Invoke-WebRequest "https://$functionName.scm.azurewebsites.net/api/functions/admin/masterkey" -Headers "Authorization : Bearer $token"
+    $azFuncAccessToken = Invoke-WebRequest https://$functionName.scm.azurewebsites.net/api/functions/admin/masterkey -Headers @{"Authorization"="Bearer $token"}
 
     Write-Host($azFuncAccessToken)    
 
@@ -13,11 +15,12 @@ function CreateEventSubscriptionEventHook($token, $functionName, $subscriptionTi
 }
 
 function GetAccessToken() {
+
     $currentAzureContext = Get-AzContext
     $azureRmProfile = [Microsoft.Azure.Commands.Common.Authentication.Abstractions.AzureRmProfileProvider]::Instance.Profile;
     $profileClient = New-Object Microsoft.Azure.Commands.ResourceManager.Common.RMProfileClient($azureRmProfile);
-    $profileClient.AcquireAccessToken($currentAzureContext.Subscription.TenantId).AccessToken;
-    
+    $token = $profileClient.AcquireAccessToken($currentAzureContext.Subscription.TenantId).AccessToken;
+    return $token
 }
 
 function IsEventSubscriptionExist($name, $targetResource) {
@@ -30,4 +33,4 @@ function Sayhello3 {
 }
 
 
-Export-ModuleMember -Function Sayhello, SayHello2, SayHello3, GoodBye, GoodBye2, GoodBye3
+Export-ModuleMember -Function GetAccessToken, CreateEventSubscriptionEventHook, SayHello3, GoodBye, GoodBye2, GoodBye3
