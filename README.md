@@ -47,5 +47,5 @@ curl -X POST -u <deployment_user> --data-binary @"<zip_file_path>" https://<app_
 
 
 
-
+https://docs.microsoft.com/en-us/rest/api/azure/
 
