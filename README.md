@@ -46,6 +46,76 @@ Deploying function app using REST api
 curl -X POST -u <deployment_user> --data-binary @"<zip_file_path>" https://<app_name>.scm.azurewebsites.net/api/zipdeploy
 
 
+Better resource to creatae a function app using powershell 
 
-https://docs.microsoft.com/en-us/rest/api/azure/
+https://4sysops.com/archives/how-to-create-an-open-file-folder-dialog-box-with-powershell/
+
+
+# Create the Function App
+$functionAppName = '4sysops-func'
+$newFunctionAppParams = @{
+    ResourceType      = 'Microsoft.Web/Sites'
+    ResourceName      = $functionAppName
+    Kind              = 'functionapp'
+    Location          = $location
+    ResourceGroupName = $resourceGroupName
+    Properties        = @{}
+    Force             = $true
+}
+$functionApp = New-AzureRmResource @newFunctionAppParams
+$functionApp
+
+
+Configure app settings
+
+
+
+
+$functionAppSettings = @{
+    AzureWebJobDashboard                     = $storageConnectionString
+    AzureWebJobsStorage                      = $storageConnectionString
+    FUNCTIONS_EXTENSION_VERSION              = '~1'
+    WEBSITE_CONTENTAZUREFILECONNECTIONSTRING = $storageConnectionString
+    WEBSITE_CONTENTSHARE                     = $storageAccountName
+}
+$setWebAppParams = @{
+    Name = $functionAppName
+    ResourceGroupName = $resourceGroupName
+    AppSettings = $functionAppSettings
+}
+$webApp = Set-AzureRmWebApp @setWebAppParams
+$webApp
+
+
+Deploy the function 
+
+
+
+$getSecretsParams = @{
+    ResourceId = $function.ResourceId
+    Action     = 'listsecrets'
+    ApiVersion = '2015-08-01'
+    Force      = $true
+}
+$functionSecrets = Invoke-AzureRmResourceAction @getSecretsParams
+ 
+# GET
+Invoke-RestMethod -Uri "$($functionSecrets.trigger_url)&name=Brandon"
+ 
+# POST
+$body = @{
+    name = 'Brandon'
+} | ConvertTo-Json
+Invoke-RestMethod -Uri $functionSecrets.trigger_url -Body $body -Method Post
+
+
+
+
+
+
+
+
+
+
+
 
