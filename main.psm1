@@ -6,7 +6,7 @@ function CreateEventSubscriptionEventHook($resourcegroup, $functionName, $subscr
 
     Write-Host('Updating app settings!')
 
-    ForceAppSettingsAzureWebJobsSecretStorageType $resourcegroup. $functionName
+    ForceAppSettingsAzureWebJobsSecretStorageType $resourcegroup $functionName
 
     $token = GetAccessToken
 
@@ -28,9 +28,14 @@ function GetAccessToken() {
 }
 
 function ForceAppSettingsAzureWebJobsSecretStorageType($resourcegroup, $functionName)  {
+    az functionapp config appsettings set --name "$functionName" --resource-group "$resourcegroup" --setting "AzureWebJobsSecretStorageType=Files"
+}
 
-    az functionapp config appsettings set --name $functionName --resource-group $resourcegroup --setting "AzureWebJobsSecretStorageType=Files"
 
+functionn ApplySecurityPolicyToFunction {
+
+    ## disable remote debugging 
+    ## disable ftp
 }
 
 function IsEventSubscriptionExist($name, $targetResource) {
@@ -43,4 +48,4 @@ function Sayhello3 {
 }
 
 
-Export-ModuleMember -Function GetAccessToken, CreateEventSubscriptionEventHook, SayHello3, GoodBye, GoodBye2, GoodBye3
+Export-ModuleMember -Function GetAccessToken, ForceAppSettingsAzureWebJobsSecretStorageType, CreateEventSubscriptionEventHook, ApplySecurityPolicyToFunction, IsEventSubscriptionExist, GoodBye2, GoodBye3
