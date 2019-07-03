@@ -27,26 +27,37 @@ function GetAccessToken() {
     return $token
 }
 
-function ForceAppSettingsAzureWebJobsSecretStorageType($resourcegroup, $functionName)  {
-    az functionapp config appsettings set --name "$functionName" --resource-group "$resourcegroup" --setting "AzureWebJobsSecretStorageType=Files"
+function CreateFunctionApp() { 
+    
 }
 
-function DeployAppFunction {
-    #PowerShell
-$username = "<deployment_user>"
-$password = "<deployment_password>"
-$filePath = "<zip_file_path>"
-$apiUrl = "https://<app_name>.scm.azurewebsites.net/api/zipdeploy"
-$base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("{0}:{1}" -f $username, $password)))
-$userAgent = "powershell/1.0"
-Invoke-RestMethod -Uri $apiUrl -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -UserAgent $userAgent -Method POST -InFile $filePath -ContentType "multipart/form-data"
+function DeployAppFunction($functionAppName, $resourceGroup, $filePath) {
+
+    $apiUrl = "https://$functionAppName.scm.azurewebsites.net/api/zipdeploy"
+    $base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("{0}:{1}" -f $username, $password)))
+    $userAgent = "powershell/1.0"
+    Invoke-RestMethod -Uri $apiUrl -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -UserAgent $userAgent -Method POST -InFile $filePath -ContentType "multipart/form-data"
 
 }
 
-functionn ApplySecurityPolicyToFunction {
+function ApplySecurityPolicyToFunction {
 
     ## disable remote debugging 
     ## disable ftp
+}
+
+function SetAppSetting($functionAppName, $resourceGroupName, [hashtable] $functionAppSettings) {
+  
+    $functionAppSettings.add("AzureWebJobsSecretStorageType", "Files")
+    $functionAppSettings.add("AzureWebJobsStorage", "")
+    
+    $setWebAppParams = @{
+        Name = $functionAppName
+        ResourceGroupName = $resourceGroupName
+        AppSettings = $functionAppSettings
+    }
+
+    $webApp = Set-AzWebApp @setWebAppParams
 }
 
 function IsEventSubscriptionExist($name, $targetResource) {
@@ -54,9 +65,5 @@ function IsEventSubscriptionExist($name, $targetResource) {
     Write-Host('helllo there!')
 }
 
-function Sayhello3 {
-    Write-Host('helllo there!')
-}
 
-
-Export-ModuleMember -Function GetAccessToken, ForceAppSettingsAzureWebJobsSecretStorageType, CreateEventSubscriptionEventHook, ApplySecurityPolicyToFunction, IsEventSubscriptionExist, GoodBye2, GoodBye3
+Export-ModuleMember -Function GetAccessToken, DeployAppFunction, SetAppSetting, CreateEventSubscriptionEventHook, ApplySecurityPolicyToFunction, IsEventSubscriptionExist, GoodBye2, GoodBye3
