@@ -32,18 +32,15 @@ function CreateFunctionApp() {
 }
 
 function DeployAppFunction($functionAppName, $resourceGroup, $filePath) {
-
-    $siteName = 'claimsubmissionfunction'
-    $ResourceGroupName = 'myResourceGroup'
-    $PublishingProfile = [xml](Get-AzureRmWebAppPublishingProfile -ResourceGroupName $ResourceGroupName -Name $siteName)
+  
+    $PublishingProfile = [xml](Get-AzWebAppPublishingProfile -ResourceGroupName $resourceGroup -Name $functionAppName)
     
     $Username = (Select-Xml -Xml $PublishingProfile -XPath "//publishData/publishProfile[contains(@profileName,'Web Deploy')]/@userName").Node.Value
     $Password = (Select-Xml -Xml $PublishingProfile -XPath "//publishData/publishProfile[contains(@profileName,'Web Deploy')]/@userPWD").Node.Value
     
     $base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("{0}:{1}" -f $Username,$Password)))
     
-
-    $apiUrl = "https://$siteName.scm.azurewebsites.net/api/zipdeploy";
+    $apiUrl = "https://$functionAppName.scm.azurewebsites.net/api/zipdeploy";
 
     Invoke-RestMethod -Uri $apiUrl -InFile $filePath -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -Method Post -ContentType "multipart/form-date";
 
