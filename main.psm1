@@ -43,7 +43,6 @@ function DeployAppFunction($functionAppName, $resourceGroup, $filePath) {
     $apiUrl = "https://$functionAppName.scm.azurewebsites.net/api/zipdeploy";
 
     Invoke-RestMethod -Uri $apiUrl -InFile $filePath -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -Method Post -ContentType "multipart/form-date";
-
 }
 
 function ApplySecurityPolicyToFunction {
@@ -71,5 +70,11 @@ function IsEventSubscriptionExist($name, $targetResource) {
     Write-Host('helllo there!')
 }
 
+function SecureFunctionApp($resourcegroup, $functionAppName) {
 
-Export-ModuleMember -Function GetAccessToken, DeployAppFunction, SetAppSetting, CreateEventSubscriptionEventHook, ApplySecurityPolicyToFunction, IsEventSubscriptionExist, GoodBye2, GoodBye3
+    // Disable remote debugging
+
+}
+
+
+Export-ModuleMember -Function SecureFunctionApp, GetAccessToken, DeployAppFunction, SetAppSetting, CreateEventSubscriptionEventHook, ApplySecurityPolicyToFunction, IsEventSubscriptionExist, GoodBye2, GoodBye3
