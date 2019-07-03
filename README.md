@@ -26,7 +26,6 @@ Export-ModuleMember -Function Sayhello, SayHello2, SayHello3, GoodBye, GoodBye2,
 
 
 
-
 Getting master key from function app 
 
 token=$(/usr/bin/az account get-access-token -o tsv --query accessToken)
@@ -39,16 +38,6 @@ echo "setting up master key : $azFuncAccessToken"
 
 az eventgrid event-subscription create --name "mt9fileadaptersubscription" --source-resource-id "/subscriptions/$(Subscription_id)/resourceGroups/$(env)$(shared_resource_group_name)/providers/Microsoft.Storage/storageaccounts/$(env)$(shared_storage_account)" --endpoint  "https://$(env)$(fawebhookuri).azurewebsites.net/runtime/webhooks/EventGrid?functionName=MyFunctionAppName&code=$azFuncAccessToken" --endpoint-type webhook  --included-event-types Microsoft.Storage.BlobCreated  --subject-begins-with '/test'
 
-
-
-Deploying function app using REST api 
-
-curl -X POST -u <deployment_user> --data-binary @"<zip_file_path>" https://<app_name>.scm.azurewebsites.net/api/zipdeploy
-
-
-Better resource to creatae a function app using powershell 
-
-https://4sysops.com/archives/how-to-create-an-open-file-folder-dialog-box-with-powershell/
 
 
 # Create the Function App
@@ -67,7 +56,6 @@ $functionApp
 
 
 Configure app settings
-
 
 
 
