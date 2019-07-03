@@ -57,10 +57,9 @@ function ApplySecurityPolicyToFunction {
 
 
 function SetAppSetting($functionAppName, $resourceGroupName, [hashtable] $functionAppSettings) {
-  
-    
+    ## Adding key settings to app config 
     $functionAppSettings.add("AzureWebJobsSecretStorageType", "Files")
-    $functionAppSettings.add("AzureWebJobsStorage", "")
+    $functionAppSettings.add("AzureWebJobsStorage", "") ## DefaultEndpointsProtocol=https;AccountName=sbsabachofilecreate;AccountKey=2Ukz3jwU1PRgsknLMznHGbLuwk73I9PsBzDTAxedjLRML2Bot4FXFfOW5NZwnbkFN3TTuH3+ZccnLaeYF2qDow==;EndpointSuffix=core.windows.net
     
     $setWebAppParams = @{
         Name = $functionAppName
