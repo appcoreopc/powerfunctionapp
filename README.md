@@ -41,3 +41,45 @@ az eventgrid event-subscription create --name "mt9fileadaptersubscription" --sou
 
 
 
+
+
+
+
+
+
+
+
+
+$AppServicePlan = "abc-123"
+$AppInsightsKey = "your key here"
+$ResourceGroup = "MyRgName"
+$Location = "westeurope"
+$FunctionAppName = "MyFunctionName"
+$AzFunctionAppStorageAccountName = "MyFunctionAppStorageAccountName"
+$FunctionAppSettings = @{
+    ServerFarmId="/subscriptions/<GUID>/resourceGroups/$ResourceGroup/providers/Microsoft.Web/serverfarms/$AppServicePlan";
+    alwaysOn=$True;
+}
+
+# Provision the function app service
+New-AzResource -ResourceGroupName $ResourceGroup -Location $Location -ResourceName $FunctionAppName -ResourceType "microsoft.web/sites" -Kind "functionapp" -Properties $FunctionAppSettings -Force | Out-Null
+
+$AzFunctionAppStorageAccountKey = Get-AzStorageAccountKey -ResourceGroupName $ResourceGroup -AccountName $AzFunctionAppStorageAccountName | Where-Object { $_.KeyName -eq "Key1" } | Select-Object Value
+$AzFunctionAppStorageAccountConnectionString = "DefaultEndpointsProtocol=https;AccountName=$AzFunctionAppStorageAccountName;AccountKey=$($AzFunctionAppStorageAccountKey.Value)"
+$AzFunctionAppSettings = @{
+    APPINSIGHTS_INSTRUMENTATIONKEY = $AppInsightsKey;
+    AzureWebJobsDashboard = $AzFunctionAppStorageAccountConnectionString;
+    AzureWebJobsStorage = $AzFunctionAppStorageAccountConnectionString;
+    FUNCTIONS_EXTENSION_VERSION = "~2";
+    FUNCTIONS_WORKER_RUNTIME = "dotnet";
+}
+
+# Set the correct application settings on the function app
+Set-AzWebApp -Name $FunctionAppName -ResourceGroupName $ResourceGroup -AppSettings $AzFunctionAppSettings | Out-Null
+
+
+
+
+
+
+
