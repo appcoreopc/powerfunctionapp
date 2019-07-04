@@ -51,6 +51,10 @@ az eventgrid event-subscription create --name "mt9fileadaptersubscription" --sou
 
 
 
+https://www.udemy.com/hands-on-penetration-testing-labs-30/
+https://www.udemy.com/computer-hacking-forensic-investigator/#reviews
+https://www.udemy.com/cyber-security-advanced-persistent-threat-defender/
+
 
 
 
