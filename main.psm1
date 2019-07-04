@@ -34,7 +34,6 @@ function GetAccessToken() {
 }
 
 function CreateServicePlan($servicePlanName, $resourceGroup, $location) {
-
     $svplan = New-AzAppServicePlan -ResourceGroupName $resourceGroup -Name $servicePlanName -Location $location -Tier "Basic" 
     return $svplan    
 }
@@ -50,8 +49,7 @@ function CreateFunctionApp($resourceGroupName, $location, $functionAppName, $sto
 
     $storageacc = NewStorageAccount $storageAccountName $rg.ResourceGroupName $rg.Location
 
-    $FunctionAppSettings = @{
-        #ServerFarmId="/subscriptions/<GUID>/resourceGroups/$rg.ResourceGroupName/providers/Microsoft.Web/serverfarms/$AppServicePlan";
+    $FunctionAppSettings = @{    
         alwaysOn=$True;
     }
 
@@ -68,17 +66,8 @@ function CreateFunctionApp($resourceGroupName, $location, $functionAppName, $sto
         FUNCTIONS_WORKER_RUNTIME = "dotnet";    
     }
 
-    # # Set the correct application settings on the function app
-    Set-AzWebApp -Name $functionAppName -ResourceGroupName $rg.ResourceGroupName -AppSettings $AzFunctionAppSettings 
-
-    #$Resource = Get-AzResource -ResourceGroupName $rg.ResourceGroupName -ResourceType Microsoft.Web/sites/config -ResourceName $functionAppName -ApiVersion "2018-02-01"
-    
-    #$newRc.Properties.appsettings = $AzFunctionAppSettings
-    
-    #$Resource | Set-AzResource -ApiVersion "2018-02-01" -Force
-
-    
-
+    ## Set the correct application settings on the function app
+    Set-AzWebApp -Name $functionAppName -ResourceGroupName $rg.ResourceGroupName -AppSettings $AzFunctionAppSettings    
 }
 
 ## Get publishing profile and deploy application to scm zipdeploy ##
@@ -94,10 +83,20 @@ function DeployAppFunction($functionAppName, $resourceGroup, $filePath) {
     Invoke-RestMethod -Uri $apiUrl -InFile $filePath -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -Method Post -ContentType "multipart/form-date";
 }
 
-function ApplySecurityPolicyToFunction {
+function SecureFunctionApp($resourceGroupName, $functionAppName) {
 
     ## disable remote debugging 
     ## disable ftp
+
+    $targetResource = Get-AzResource -ResourceGroupName $resourceGroupName -ResourceType Microsoft.Web/sites/config -ResourceName $functionAppName -ApiVersion "2018-02-01"
+
+    ## disable remote debugging 
+    $targetResource.Properties.remoteDebuggingEnabled = "False"
+    $targetResource.Properties.ftpsState = "Disabled"
+
+    ## disable cors ##
+
+    $targetResource | Set-AzResource -ApiVersion "2018-02-01" -Force
 }
 
 function SetAppSetting($functionAppName, $resourceGroupName, [hashtable] $functionAppSettings) {
@@ -119,10 +118,4 @@ function IsEventSubscriptionExist($name, $targetResource) {
     Write-Host('helllo there!')
 }
 
-function SecureFunctionApp($resourcegroup, $functionAppName) {
-
-    // Disable remote debugging
-
-}
-
-Export-ModuleMember -Function SecureFunctionApp, CreateResourceGroup, GetAccessToken, CreateFunctionApp, CreateServicePlan, DeployAppFunction, SetAppSetting, CreateEventSubscriptionEventHook, ApplySecurityPolicyToFunction, IsEventSubscriptionExist, GoodBye2, GoodBye3   
+Export-ModuleMember -Function SecureFunctionApp, CreateResourceGroup, GetAccessToken, CreateFunctionApp, CreateServicePlan, DeployAppFunction, SetAppSetting, CreateEventSubscriptionEventHook, ApplySecurityPolicy, IsEventSubscriptionExist
