@@ -1,7 +1,18 @@
 # powerfunctionapp
 
+This module requires Az Powershell to help with complexity in setting up Azure App Functions especially when it comes to deployment and setting up event subscription (such as webhooks). Powershell to help you add event hub subscription (webhook). It gets the masterkey and then pass it as part of a request for webhook event
 
-Powershell to help you add event hub subscription (webhook). It gets the masterkey and then pass it as part of a request for webhook event
+This powershell module aim to help ease that process. 
+
+## Setup all your function app resource
+
+## Secure function app 
+
+SecureFunctionapp - Typically allows us to disable remote logging and ftps. 
+
+## Change your app settings 
+
+
 
 
 Go to the root folder and then import entire module by using the following command :- 
