@@ -58,17 +58,28 @@ function CreateFunctionApp($resourceGroupName, $location, $functionAppName, $sto
 
     # Provision the function app service
     New-AzResource -ResourceGroupName $rg.ResourceGroupName -Location $rg.Location -ResourceName $functionAppName -ResourceType "microsoft.web/sites" -Kind "functionapp" -Properties $FunctionAppSettings -Force 
-   
+
+    Write-Host($storageacc)
+        
     $AzFunctionAppSettings = @{
-        APPINSIGHTS_INSTRUMENTATIONKEY = $AppInsightsKey;
+        #APPINSIGHTS_INSTRUMENTATIONKEY = $AppInsightsKey;
         AzureWebJobsDashboard = $storageacc.Context.ConnectionString;
         AzureWebJobsStorage = $storageacc.Context.ConnectionString;
         FUNCTIONS_EXTENSION_VERSION = "~2";
-        FUNCTIONS_WORKER_RUNTIME = "dotnet";
+        FUNCTIONS_WORKER_RUNTIME = "dotnet";    
     }
 
-    # Set the correct application settings on the function app
+    # # Set the correct application settings on the function app
     Set-AzWebApp -Name $functionAppName -ResourceGroupName $rg.ResourceGroupName -AppSettings $AzFunctionAppSettings 
+
+    #$Resource = Get-AzResource -ResourceGroupName $rg.ResourceGroupName -ResourceType Microsoft.Web/sites/config -ResourceName $functionAppName -ApiVersion "2018-02-01"
+    
+    #$newRc.Properties.appsettings = $AzFunctionAppSettings
+    
+    #$Resource | Set-AzResource -ApiVersion "2018-02-01" -Force
+
+    
+
 }
 
 ## Get publishing profile and deploy application to scm zipdeploy ##
