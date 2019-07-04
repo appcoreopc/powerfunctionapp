@@ -3,24 +3,22 @@ Import-Module ./util/util.psm1
 Import-Module Az
 
 function CreateResourceGroup($resourceGroupname, $location) {
-    New-AzResourceGroup $resourceGroupname $location 
+    $newResourceGroup = New-AzResourceGroup $resourceGroupname $location 
+    return $newResourceGroup    
 }
 
-function NewStorageAccount($storageName, $resourceGroupname, $location) {
-  New-AzStorageAccount -ResourceGroupName $resourceGroupname -AccountName storageName -Location $location -SkuName Standard_LRS
+function NewStorageAccount($storageName, $resourceGroupName, $location) {
+  $storageAccount = New-AzStorageAccount -ResourceGroupName $resourceGroupName -AccountName storageName -Location $location -SkuName Standard_LRS
+  return $storageAccount
 }
 
 function CreateEventSubscriptionEventHook($resourcegroup, $functionName, $subscriptionTitle, $functionCodeName, $resourceId) {
 
     Write-Host('Updating app settings!')
-
     ForceAppSettingsAzureWebJobsSecretStorageType $resourcegroup $functionName
-
     $token = GetAccessToken
-
     Write-Host('Creating subscription!')
     $azFuncAccessToken = Invoke-WebRequest "https://$functionName.scm.azurewebsites.net/api/functions/admin/masterkey" -Headers @{"Authorization"="Bearer $token"}
-
     Write-Host($azFuncAccessToken.masterKey)    
     
     $status = New-AzEventGridSubscription -EventSubscriptionName $subscriptionTitle -ResourceId "$resourceId" -endpoint "https://$functionName.azurewebsites.net/runtime/webhooks/EventGrid?functionName=$functionCodeName&code=$azFuncAccessToken" -EndpointType webhook -IncludedEventType Microsoft.Storage.BlobCreated 
@@ -37,51 +35,39 @@ function GetAccessToken() {
 }
 
 function CreateServicePlan($servicePlanName, $resourceGroup, $location) {
-    
+
     $svplan = New-AzAppServicePlan -ResourceGroupName $resourceGroup -Name $servicePlanName -Location $location -Tier "Basic" 
-    
+    return $svplan    
 }
 
 #####################################################################################
 # place holder for code, might have to spit out app service plan codes. 
 #####################################################################################
-function CreateFunctionApp() { 
+function CreateFunctionApp($resourceGroupName, $location, $functionAppName, $storageAccountName) { 
+  
+    $rg = CreateResourceGroup $resourceGroupName $location
 
-    # setup storage account 
-    # setup service plan 
-    # setup function app 
-    # setup app insights too    
+    $svcPlan = CreateServicePlan "DefaultServicePlan" $rg.ResourceGroupName $rg.Location
 
-    $AppServicePlan = "abc-123"
-    $AppInsightsKey = "your key here"
-    $ResourceGroup = "MyRgName"
-    $Location = "westeurope"
-    $FunctionAppName = "MyFunctionName"
-    $AzFunctionAppStorageAccountName = "MyFunctionAppStorageAccountName"
+    $storageacc = NewStorageAccount $storageAccountName $rg.ResourceGroupName $rg.Location
+
     $FunctionAppSettings = @{
-        ServerFarmId="/subscriptions/<GUID>/resourceGroups/$ResourceGroup/providers/Microsoft.Web/serverfarms/$AppServicePlan";
+        #ServerFarmId="/subscriptions/<GUID>/resourceGroups/$rg.ResourceGroupName/providers/Microsoft.Web/serverfarms/$AppServicePlan";
         alwaysOn=$True;
     }
 
     # Provision the function app service
-    New-AzResource -ResourceGroupName $ResourceGroup -Location $Location -ResourceName $FunctionAppName -ResourceType "microsoft.web/sites" -Kind "functionapp" -Properties $FunctionAppSettings -Force | Out-Null
-
-    $AzFunctionAppStorageAccountKey = Get-AzStorageAccountKey -ResourceGroupName $ResourceGroup -AccountName $AzFunctionAppStorageAccountName | Where-Object { $_.KeyName -eq "Key1" } | Select-Object Value
-    $AzFunctionAppStorageAccountConnectionString = "DefaultEndpointsProtocol=https;AccountName=$AzFunctionAppStorageAccountName;AccountKey=$($AzFunctionAppStorageAccountKey.Value)"
+    New-AzResource -ResourceGroupName $rg.ResourceGroupName -Location $rg.Location -ResourceName $functionAppName -ResourceType "microsoft.web/sites" -Kind "functionapp" -Properties $FunctionAppSettings -Force 
+   
     $AzFunctionAppSettings = @{
         APPINSIGHTS_INSTRUMENTATIONKEY = $AppInsightsKey;
-        AzureWebJobsDashboard = $AzFunctionAppStorageAccountConnectionString;
-        AzureWebJobsStorage = $AzFunctionAppStorageAccountConnectionString;
+        AzureWebJobsDashboard = $storageacc.Context.ConnectionString;
+        AzureWebJobsStorage = $storageacc.Context.ConnectionString;
         FUNCTIONS_EXTENSION_VERSION = "~2";
         FUNCTIONS_WORKER_RUNTIME = "dotnet";
 }
-
-# Set the correct application settings on the function app
-Set-AzWebApp -Name $FunctionAppName -ResourceGroupName $ResourceGroup -AppSettings $AzFunctionAppSettings | Out-Null
-
-
-
-
+    # Set the correct application settings on the function app
+    Set-AzWebApp -Name $functionAppName -ResourceGroupName $rg.ResourceGroupName -AppSettings $AzFunctionAppSettings 
 }
 
 ## Get publishing profile and deploy application to scm zipdeploy ##
@@ -102,7 +88,6 @@ function ApplySecurityPolicyToFunction {
     ## disable remote debugging 
     ## disable ftp
 }
-
 
 function SetAppSetting($functionAppName, $resourceGroupName, [hashtable] $functionAppSettings) {
     ## Adding key settings to app config 
@@ -129,5 +114,4 @@ function SecureFunctionApp($resourcegroup, $functionAppName) {
 
 }
 
-
-Export-ModuleMember -Function SecureFunctionApp, GetAccessToken, DeployAppFunction, SetAppSetting, CreateEventSubscriptionEventHook, ApplySecurityPolicyToFunction, IsEventSubscriptionExist, GoodBye2, GoodBye3
+Export-ModuleMember -Function SecureFunctionApp, CreateResourceGroup, GetAccessToken, CreateFunctionApp, CreateServicePlan, DeployAppFunction, SetAppSetting, CreateEventSubscriptionEventHook, ApplySecurityPolicyToFunction, IsEventSubscriptionExist, GoodBye2, GoodBye3   
