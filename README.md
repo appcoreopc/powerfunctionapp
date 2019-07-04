@@ -39,15 +39,7 @@ echo "setting up master key : $azFuncAccessToken"
 az eventgrid event-subscription create --name "mt9fileadaptersubscription" --source-resource-id "/subscriptions/$(Subscription_id)/resourceGroups/$(env)$(shared_resource_group_name)/providers/Microsoft.Storage/storageaccounts/$(env)$(shared_storage_account)" --endpoint  "https://$(env)$(fawebhookuri).azurewebsites.net/runtime/webhooks/EventGrid?functionName=MyFunctionAppName&code=$azFuncAccessToken" --endpoint-type webhook  --included-event-types Microsoft.Storage.BlobCreated  --subject-begins-with '/test'
 
 
-
-
-
-
-
-
-
-
-
+https://stackoverflow.com/questions/55492614/setup-azure-function-from-powershell
 
 
 $AppServicePlan = "abc-123"
