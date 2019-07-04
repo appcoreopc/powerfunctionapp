@@ -13,11 +13,11 @@ function NewStorageAccount($storageName, $resourceGroupName, $location) {
 }
 
 function CreateEventSubscriptionEventHook($resourcegroup, $functionName, $subscriptionTitle, $functionCodeName, $resourceId) {
-
-    Write-Host('Updating app settings!')
-    ForceAppSettingsAzureWebJobsSecretStorageType $resourcegroup $functionName
+  
+    ## ForceAppSettingsAzureWebJobsSecretStorageType $resourcegroup $functionName
+    
     $token = GetAccessToken
-    Write-Host('Creating subscription!')
+  
     $azFuncAccessToken = Invoke-WebRequest "https://$functionName.scm.azurewebsites.net/api/functions/admin/masterkey" -Headers @{"Authorization"="Bearer $token"}
     Write-Host($azFuncAccessToken.masterKey)    
     
@@ -102,9 +102,8 @@ function SecureFunctionApp($resourceGroupName, $functionAppName) {
 function SetAppSetting($functionAppName, $resourceGroupName, [hashtable] $functionAppSettings) {
     ## Adding key settings to app config 
     $functionAppSettings.add("AzureWebJobsSecretStorageType", "Files")
-    $functionAppSettings.add("AzureWebJobsStorage", "") ## DefaultEndpointsProtocol=https;AccountName=sbsabachofilecreate;AccountKey=2Ukz3jwU1PRgsknLMznHGbLuwk73I9PsBzDTAxedjLRML2Bot4FXFfOW5NZwnbkFN3TTuH3+ZccnLaeYF2qDow==;EndpointSuffix=core.windows.net
-    
-    $setWebAppParams = @{
+      
+    $setWebAppParams = @{        
         Name = $functionAppName
         ResourceGroupName = $resourceGroupName
         AppSettings = $functionAppSettings
@@ -113,9 +112,4 @@ function SetAppSetting($functionAppName, $resourceGroupName, [hashtable] $functi
     $webApp = Set-AzWebApp @setWebAppParams
 }
 
-function IsEventSubscriptionExist($name, $targetResource) {
-
-    Write-Host('helllo there!')
-}
-
-Export-ModuleMember -Function SecureFunctionApp, CreateResourceGroup, GetAccessToken, CreateFunctionApp, CreateServicePlan, DeployAppFunction, SetAppSetting, CreateEventSubscriptionEventHook, ApplySecurityPolicy, IsEventSubscriptionExist
+Export-ModuleMember -Function SecureFunctionApp, CreateResourceGroup, GetAccessToken, CreateFunctionApp, CreateServicePlan, DeployAppFunction, SetAppSetting, CreateEventSubscriptionEventHook, ApplySecurityPolicy
