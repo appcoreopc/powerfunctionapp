@@ -1,16 +1,40 @@
-
 Import-Module ./util/util.psm1
 Import-Module Az
 
+## Create resource group
+
 function CreateResourceGroup($resourceGroupname, $location) {
-    $newResourceGroup = New-AzResourceGroup $resourceGroupname $location 
-    return $newResourceGroup    
+
+	Get-AzResourceGroup -Name $resourceGroupname -Location $location -ErrorVariable rgNotExist -ErrorAction SilentlyContinue
+	
+	if ($rgNotExist)
+	{
+		$newResourceGroup = New-AzResourceGroup $resourceGroupname $location 
+		return $newResourceGroup    
+	}
+	else 
+	{
+	   Write-Host("Resource group exist.")
+	}
 }
 
+# Create storage account 
 function NewStorageAccount($storageName, $resourceGroupName, $location) {
-  $storageAccount = New-AzStorageAccount -ResourceGroupName $resourceGroupName -AccountName $storageName -Location $location -SkuName Standard_LRS
-  return $storageAccount
+  
+  $storageAccountExist = Get-AzStorageAccount -ResourceGroupName $resourceGroupName -AccountName $storageName
+  
+  if ($storageAccountExist -eq $null) 
+  {
+    $storageAccount = New-AzStorageAccount -ResourceGroupName $resourceGroupName -AccountName $storageName -Location $location -SkuName Standard_LRS
+    
+	return $storageAccount
+  }
+  else {
+	Write-Host("Storage account exist.")
+  }
 }
+
+
 
 function CreateEventSubscriptionEventHook($resourcegroup, $functionName, $subscriptionTitle, $functionCodeName, $resourceId) {
   
