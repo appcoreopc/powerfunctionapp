@@ -9,7 +9,6 @@ Go to the root folder and then import entire module by using the following comma
 import-module ./powerfunctionapp
 
 
-
 ####################################################
 
 
@@ -41,6 +40,19 @@ az eventgrid event-subscription create --name "mt9fileadaptersubscription" --sou
 
 https://stackoverflow.com/questions/55492614/setup-azure-function-from-powershell
 
+# Create the Function App
+$functionAppName = '4sysops-func'
+$newFunctionAppParams = @{
+    ResourceType      = 'Microsoft.Web/Sites'
+    ResourceName      = $functionAppName
+    Kind              = 'functionapp'
+    Location          = $location
+    ResourceGroupName = $resourceGroupName
+    Properties        = @{}
+    Force             = $true
+}
+$functionApp = New-AzureRmResource @newFunctionAppParams
+$functionApp
 
 $AppServicePlan = "abc-123"
 $AppInsightsKey = "your key here"
