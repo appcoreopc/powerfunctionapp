@@ -38,7 +38,8 @@ function GetAccessToken() {
 
 function CreateServicePlan($servicePlanName, $resourceGroup, $location) {
     
-    New-AzAppServicePlan -ResourceGroupName $resourceGroup -Name $servicePlanName -Location $locaion -Tier "Basic" 
+    $svplan = New-AzAppServicePlan -ResourceGroupName $resourceGroup -Name $servicePlanName -Location $location -Tier "Basic" 
+    
 }
 
 #####################################################################################
