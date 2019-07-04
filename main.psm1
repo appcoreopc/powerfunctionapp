@@ -8,7 +8,7 @@ function CreateResourceGroup($resourceGroupname, $location) {
 }
 
 function NewStorageAccount($storageName, $resourceGroupName, $location) {
-  $storageAccount = New-AzStorageAccount -ResourceGroupName $resourceGroupName -AccountName storageName -Location $location -SkuName Standard_LRS
+  $storageAccount = New-AzStorageAccount -ResourceGroupName $resourceGroupName -AccountName $storageName -Location $location -SkuName Standard_LRS
   return $storageAccount
 }
 
@@ -65,7 +65,8 @@ function CreateFunctionApp($resourceGroupName, $location, $functionAppName, $sto
         AzureWebJobsStorage = $storageacc.Context.ConnectionString;
         FUNCTIONS_EXTENSION_VERSION = "~2";
         FUNCTIONS_WORKER_RUNTIME = "dotnet";
-}
+    }
+
     # Set the correct application settings on the function app
     Set-AzWebApp -Name $functionAppName -ResourceGroupName $rg.ResourceGroupName -AppSettings $AzFunctionAppSettings 
 }
