@@ -13,9 +13,7 @@ function NewStorageAccount($storageName, $resourceGroupname, $location) {
 function CreateEventSubscriptionEventHook($resourcegroup, $functionName, $subscriptionTitle, $functionCodeName, $resourceId) {
 
     Write-Host('Updating app settings!')
-
     ForceAppSettingsAzureWebJobsSecretStorageType $resourcegroup $functionName
-
     $token = GetAccessToken
 
     Write-Host('Creating subscription!')
@@ -23,12 +21,11 @@ function CreateEventSubscriptionEventHook($resourcegroup, $functionName, $subscr
 
     Write-Host($azFuncAccessToken.masterKey)    
     
-    $status = New-AzEventGridSubscription -EventSubscriptionName $subscriptionTitle -ResourceId "$resourceId" -endpoint "https://$functionName.azurewebsites.net/runtime/webhooks/EventGrid?functionName=$functionCodeName&code=$azFuncAccessToken" -EndpointType webhook -IncludedEventType Microsoft.Storage.BlobCreated 
+    $subcriptionStatus = New-AzEventGridSubscription -EventSubscriptionName $subscriptionTitle -ResourceId "$resourceId" -endpoint "https://$functionName.azurewebsites.net/runtime/webhooks/EventGrid?functionName=$functionCodeName&code=$azFuncAccessToken" -EndpointType webhook -IncludedEventType Microsoft.Storage.BlobCreated 
 }
 
-## Get token - the same as az account token 
+## Get token - the same as az account token command ##
 function GetAccessToken() {
-
     $currentAzureContext = Get-AzContext
     $azureRmProfile = [Microsoft.Azure.Commands.Common.Authentication.Abstractions.AzureRmProfileProvider]::Instance.Profile;
     $profileClient = New-Object Microsoft.Azure.Commands.ResourceManager.Common.RMProfileClient($azureRmProfile);
@@ -37,28 +34,28 @@ function GetAccessToken() {
 }
 
 function CreateServicePlan($servicePlanName, $resourceGroup, $location) {
-    
-    New-AzAppServicePlan -ResourceGroupName $resourceGroup -Name $servicePlanName -Location $locaion -Tier "Basic" 
+    $serviceplan = New-AzAppServicePlan -ResourceGroupName $resourceGroup -Name $servicePlanName -Location $location -Tier "Basic" 
+    Write-Host($serviceplan)
+    return $serviceplan
 }
 
 #####################################################################################
 # place holder for code, might have to spit out app service plan codes. 
 #####################################################################################
-function CreateFunctionApp() { 
+function CreateFunctionApp($functionAppName, $servicePlanName, $storageAccountName,  $resourceGroup, $location) { 
+    # setup service plan 
+    
+    $servicePlan = CreateFunctionApp $servicePlanName $ResourceGroup $location
+    $AppServicePlan = $servicePlan.name
+
+    NewStorageAccount $storageAccountName $resourceGroup $location
 
     # setup storage account 
-    # setup service plan 
-    # setup function app 
-    # setup app insights too    
 
-    $AppServicePlan = "abc-123"
-    $AppInsightsKey = "your key here"
-    $ResourceGroup = "MyRgName"
-    $Location = "westeurope"
-    $FunctionAppName = "MyFunctionName"
+    ## $AppInsightsKey = "your key here"
     $AzFunctionAppStorageAccountName = "MyFunctionAppStorageAccountName"
     $FunctionAppSettings = @{
-        ServerFarmId="/subscriptions/<GUID>/resourceGroups/$ResourceGroup/providers/Microsoft.Web/serverfarms/$AppServicePlan";
+        ServerFarmId="/subscriptions/<GUID>/resourceGroups/$resourceGroup/providers/Microsoft.Web/serverfarms/$AppServicePlan";
         alwaysOn=$True;
     }
 
@@ -73,14 +70,10 @@ function CreateFunctionApp() {
         AzureWebJobsStorage = $AzFunctionAppStorageAccountConnectionString;
         FUNCTIONS_EXTENSION_VERSION = "~2";
         FUNCTIONS_WORKER_RUNTIME = "dotnet";
-}
+    }
 
-# Set the correct application settings on the function app
-Set-AzWebApp -Name $FunctionAppName -ResourceGroupName $ResourceGroup -AppSettings $AzFunctionAppSettings | Out-Null
-
-
-
-
+    # Set the correct application settings on the function app
+    Set-AzWebApp -Name $FunctionAppName -ResourceGroupName $ResourceGroup -AppSettings $AzFunctionAppSettings | Out-Null
 }
 
 ## Get publishing profile and deploy application to scm zipdeploy ##
