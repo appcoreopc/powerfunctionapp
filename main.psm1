@@ -6,6 +6,10 @@ function CreateResourceGroup($resourceGroupname, $location) {
     New-AzResourceGroup $resourceGroupname $location 
 }
 
+function NewStorageAccount($storageName, $resourceGroupname, $location) {
+  New-AzStorageAccount -ResourceGroupName $resourceGroupname -AccountName storageName -Location $location -SkuName Standard_LRS
+}
+
 function CreateEventSubscriptionEventHook($resourcegroup, $functionName, $subscriptionTitle, $functionCodeName, $resourceId) {
 
     Write-Host('Updating app settings!')
