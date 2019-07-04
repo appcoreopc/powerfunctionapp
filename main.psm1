@@ -2,6 +2,10 @@
 Import-Module ./util/util.psm1
 Import-Module Az
 
+function CreateResourceGroup($resourceGroupname, $location) {
+    New-AzResourceGroup $resourceGroupname $location 
+}
+
 function CreateEventSubscriptionEventHook($resourcegroup, $functionName, $subscriptionTitle, $functionCodeName, $resourceId) {
 
     Write-Host('Updating app settings!')
