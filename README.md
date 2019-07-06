@@ -12,9 +12,6 @@ SecureFunctionapp - Typically allows us to disable remote logging and ftps.
 
 ## Change your app settings 
 
-
-
-
 Go to the root folder and then import entire module by using the following command :- 
 
 import-module ./powerfunctionapp
@@ -47,8 +44,6 @@ azFuncAccessToken=$(curl "https://$(env)$(fawebhookuri).scm.azurewebsites.net/ap
 echo "setting up master key : $azFuncAccessToken"
 
 az eventgrid event-subscription create --name "mt9fileadaptersubscription" --source-resource-id "/subscriptions/$(Subscription_id)/resourceGroups/$(env)$(shared_resource_group_name)/providers/Microsoft.Storage/storageaccounts/$(env)$(shared_storage_account)" --endpoint  "https://$(env)$(fawebhookuri).azurewebsites.net/runtime/webhooks/EventGrid?functionName=MyFunctionAppName&code=$azFuncAccessToken" --endpoint-type webhook  --included-event-types Microsoft.Storage.BlobCreated  --subject-begins-with '/test'
-
-
 
 
 https://www.udemy.com/hands-on-penetration-testing-labs-30/
