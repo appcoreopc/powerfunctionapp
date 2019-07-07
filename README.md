@@ -6,6 +6,13 @@ This powershell module aim to help ease that process.
 
 ## Setup all your function app resource
 
+$resourceGroupName = "myfunctionapprg" 
+$location = "australiaeast"
+$functionAppName = "testappfunction" 
+$storageAccountName = "myappstorageaccount"
+
+CreateFunctionApp $resourceGroupName, $location, $functionAppName, $storageAccountName
+
 ## Secure function app 
 
 SecureFunctionapp - Typically allows us to disable remote logging and ftps. 
@@ -15,7 +22,6 @@ SecureFunctionapp - Typically allows us to disable remote logging and ftps.
 Go to the root folder and then import entire module by using the following command :- 
 
 import-module ./powerfunctionapp
-
 
 ####################################################
 
