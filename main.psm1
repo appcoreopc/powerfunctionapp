@@ -3,6 +3,8 @@ Import-Module Az
 
 ## Create resource group
 
+$ApiVersion = "2018-02-01"
+
 function CreateResourceGroup($resourceGroupname, $location) {
 
 	Get-AzResourceGroup -Name $resourceGroupname -Location $location -ErrorVariable rgNotExist -ErrorAction SilentlyContinue
@@ -64,7 +66,6 @@ function GetAccessToken() {
     $token = $profileClient.AcquireAccessToken($currentAzureContext.Subscription.TenantId).AccessToken;
     return $token
 }
-
 
 function CreateServicePlan($servicePlanName, $resourceGroup, $location) {
 
@@ -135,15 +136,14 @@ function SecureFunctionApp($resourceGroupName, $functionAppName) {
     ## disable remote debugging 
     ## disable ftp
 
-    $targetResource = Get-AzResource -ResourceGroupName $resourceGroupName -ResourceType Microsoft.Web/sites/config -ResourceName $functionAppName -ApiVersion "2018-02-01"
-
+    $targetResource = Get-AzResource -ResourceGroupName $resourceGroupName -ResourceType Microsoft.Web/sites/config -ResourceName $functionAppName -ApiVersion $ApiVersion
     ## disable remote debugging 
     $targetResource.Properties.remoteDebuggingEnabled = "False"
     $targetResource.Properties.ftpsState = "Disabled"
 
     ## disable cors ##
 
-    $targetResource | Set-AzResource -ApiVersion "2018-02-01" -Force
+    $targetResource | Set-AzResource -ApiVersion $ApiVersion -Force
 }
 
 function SetAppSetting($functionAppName, $resourceGroupName, [hashtable] $functionAppSettings) {
