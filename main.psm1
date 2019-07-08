@@ -23,11 +23,10 @@ function NewStorageAccount($storageName, $resourceGroupName, $location) {
   
   $storageAccountExist = Get-AzStorageAccount -ResourceGroupName $resourceGroupName -AccountName $storageName
   
-  if ($storageAccountExist -eq $null) 
+  if ($null -eq $storageAccountExist) 
   {
     $storageAccount = New-AzStorageAccount -ResourceGroupName $resourceGroupName -AccountName $storageName -Location $location -SkuName Standard_LRS
-    
-	return $storageAccount
+  	return $storageAccount
   }
   else {
 	Write-Host("Storage account exist.")
@@ -35,13 +34,11 @@ function NewStorageAccount($storageName, $resourceGroupName, $location) {
 }
 
 
-
 function CreateEventSubscriptionEventHook($resourcegroup, $functionName, $subscriptionTitle, $functionCodeName, $resourceId) {
   
     ## ForceAppSettingsAzureWebJobsSecretStorageType $resourcegroup $functionName
     
-    $token = GetAccessToken
-  
+    $token = GetAccessToken  
     $azFuncAccessToken = Invoke-WebRequest "https://$functionName.scm.azurewebsites.net/api/functions/admin/masterkey" -Headers @{"Authorization"="Bearer $token"}
     Write-Host($azFuncAccessToken.masterKey)    
     
@@ -50,6 +47,7 @@ function CreateEventSubscriptionEventHook($resourcegroup, $functionName, $subscr
 
 ## Get token - the same as az account token command ##
 function GetAccessToken() {
+
     $currentAzureContext = Get-AzContext
     $azureRmProfile = [Microsoft.Azure.Commands.Common.Authentication.Abstractions.AzureRmProfileProvider]::Instance.Profile;
     $profileClient = New-Object Microsoft.Azure.Commands.ResourceManager.Common.RMProfileClient($azureRmProfile);
@@ -57,9 +55,16 @@ function GetAccessToken() {
     return $token
 }
 
+
 function CreateServicePlan($servicePlanName, $resourceGroup, $location) {
-    $svplan = New-AzAppServicePlan -ResourceGroupName $resourceGroup -Name $servicePlanName -Location $location -Tier "Basic" 
-    return $svplan    
+
+    $svplanExist = Get-AzAppServicePlan -resourcegroupname $resourceGroup -name $servicePlanName 
+
+    if ($null -eq $svplanExist)
+    { 
+        $svplan = New-AzAppServicePlan -ResourceGroupName $resourceGroup -Name $servicePlanName -Location $location -Tier "Basic" 
+        return $svplan    
+    }
 }
 
 #####################################################################################
@@ -69,29 +74,38 @@ function CreateFunctionApp($resourceGroupName, $location, $functionAppName, $sto
   
     $rg = CreateResourceGroup $resourceGroupName $location
 
-    $svcPlan = CreateServicePlan "DefaultServicePlan" $rg.ResourceGroupName $rg.Location
+    $svcPlan = CreateServicePlan "DefaultServicePlan" $resourceGroupName $location
 
-    $storageacc = NewStorageAccount $storageAccountName $rg.ResourceGroupName $rg.Location
+    $storageacc = NewStorageAccount $storageAccountName $resourceGroupName $location
 
     $FunctionAppSettings = @{    
         alwaysOn=$True;
     }
 
-    # Provision the function app service
-    New-AzResource -ResourceGroupName $rg.ResourceGroupName -Location $rg.Location -ResourceName $functionAppName -ResourceType "microsoft.web/sites" -Kind "functionapp" -Properties $FunctionAppSettings -Force 
+    $webresource = Get-AzResource -name $functionAppName -ResourceGroupName $resourceGroupName -ResourceType "microsoft.web/sites"
 
-    Write-Host($storageacc)
-        
-    $AzFunctionAppSettings = @{
-        #APPINSIGHTS_INSTRUMENTATIONKEY = $AppInsightsKey;
-        AzureWebJobsDashboard = $storageacc.Context.ConnectionString;
-        AzureWebJobsStorage = $storageacc.Context.ConnectionString;
-        FUNCTIONS_EXTENSION_VERSION = "~2";
-        FUNCTIONS_WORKER_RUNTIME = "dotnet";    
+    if ($null -eq $webresource) {
+
+         # Provision the function app service
+        New-AzResource -ResourceGroupName $rg.ResourceGroupName -Location $rg.Location -ResourceName $functionAppName -ResourceType "microsoft.web/sites" -Kind "functionapp" -Properties $FunctionAppSettings -Force 
+                      
+        Write-Host("Appsettings")
+        Write-Host($AzFunctionAppSettings)
+
+        ## Set the correct application settings on the function app
+        Set-AzWebApp -Name $functionAppName -ResourceGroupName $rg.ResourceGroupName -AppSettings @{
+            #APPINSIGHTS_INSTRUMENTATIONKEY = $AppInsightsKey;
+            AzureWebJobsDashboard = $storageacc.Context.ConnectionString;
+            AzureWebJobsStorage = $storageacc.Context.ConnectionString;
+            FUNCTIONS_EXTENSION_VERSION = "~2";
+            FUNCTIONS_WORKER_RUNTIME = "dotnet";    
+        }          
+
+        else {
+            Write-Host("App function name already exist")
+
+        }
     }
-
-    ## Set the correct application settings on the function app
-    Set-AzWebApp -Name $functionAppName -ResourceGroupName $rg.ResourceGroupName -AppSettings $AzFunctionAppSettings    
 }
 
 ## Get publishing profile and deploy application to scm zipdeploy ##
