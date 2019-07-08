@@ -20,17 +20,27 @@ function CreateResourceGroup($resourceGroupname, $location) {
 
 # Create storage account 
 function NewStorageAccount($storageName, $resourceGroupName, $location) {
-  
-  $storageAccountExist = Get-AzStorageAccount -ResourceGroupName $resourceGroupName -AccountName $storageName
-  
-  if ($null -eq $storageAccountExist) 
-  {
-    $storageAccount = New-AzStorageAccount -ResourceGroupName $resourceGroupName -AccountName $storageName -Location $location -SkuName Standard_LRS
-  	return $storageAccount
-  }
-  else {
-	Write-Host("Storage account exist.")
-  }
+ 
+    $storageAccountExist = $null
+    
+    try 
+    {
+        $storageAccountExist = Get-AzStorageAccount -ResourceGroupName $resourceGroupName -AccountName $storageName
+    }
+    catch 
+    {
+        $storageAccountExist = $null     
+    }
+    
+    if ($null -eq $storageAccountExist) 
+    {
+      $storageAccount = New-AzStorageAccount -ResourceGroupName $resourceGroupName -AccountName $storageName -Location $location -SkuName Standard_LRS
+        return $storageAccount
+    }
+    else 
+    {
+      Write-Host("Storage account exists")
+    }
 }
 
 
@@ -99,12 +109,11 @@ function CreateFunctionApp($resourceGroupName, $location, $functionAppName, $sto
             AzureWebJobsStorage = $storageacc.Context.ConnectionString;
             FUNCTIONS_EXTENSION_VERSION = "~2";
             FUNCTIONS_WORKER_RUNTIME = "dotnet";    
-        }          
-
-        else {
-            Write-Host("App function name already exist")
-
-        }
+        } 
+    }         
+    else
+    { 
+        Write-Host("App function name already exist")        
     }
 }
 
