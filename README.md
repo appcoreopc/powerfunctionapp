@@ -13,33 +13,28 @@ $storageAccountName = "myappstorageaccount"
 
 CreateFunctionApp $resourceGroupName, $location, $functionAppName, $storageAccountName
 
-## Secure function app 
+### Secure function app 
 
 SecureFunctionapp - Typically allows us to disable remote logging and ftps. 
 
-## Change your app settings 
+Example 
+> SecureFunctionapp $resourcegorupName $functionAppName
 
-Go to the root folder and then import entire module by using the following command :- 
+### Secure CORS 
 
-import-module ./powerfunctionapp
+Example :-
 
-####################################################
-
-
-How do i get multiple module to load (with the module in different directory)
-
-1. setup your main RootModule = 'test.psm1', which in turn, import other modules 
-
-Import-Module ./util/util.psm1
-
-After that, once you have imported, you also export to function 
-
-Export-ModuleMember -Function Sayhello, SayHello2, SayHello3, GoodBye, GoodBye2, GoodBye3
-
-####################################################
+> SetCors $resourcegorupName $functionAppName $allowOrigin 
 
 
-Getting master key from function app 
+### Change your app settings 
+
+SetAppSetting allows you to update your app settings. $settings parameter is a hastable. 
+
+> SetAppSetting $functionAppName $resourceGroup, $settings) 
+
+
+### Getting master key from function app 
 
 token=$(/usr/bin/az account get-access-token -o tsv --query accessToken)
 
