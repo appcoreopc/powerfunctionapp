@@ -27,7 +27,7 @@ function NewStorageAccount($storageName, $resourceGroupName, $location) {
     
     try 
     {
-        $storageAccountExist = Get-AzStorageAccount -ResourceGroupName $resourceGroupName -AccountName $storageName
+        $storageAccountExist = Get-AzStorageAccount -ResourceGroupName $resourceGroupName -AccountName $storageName -ErrorAction Ignore
     }
     catch 
     {
@@ -137,13 +137,61 @@ function SecureFunctionApp($resourceGroupName, $functionAppName) {
     ## disable ftp
 
     $targetResource = Get-AzResource -ResourceGroupName $resourceGroupName -ResourceType Microsoft.Web/sites/config -ResourceName $functionAppName -ApiVersion $ApiVersion
+    
+    if ($null -ne $targetResource)
+    {
+        ## disable remote debugging 
+        $targetResource.Properties.remoteDebuggingEnabled = "False"
+        $targetResource.Properties.ftpsState = "Disabled"
+        $targetResource.Properties.cors = @{allowedOrigins =  @("http://example.net")}
+
+        ## disable cors ##
+        $targetResource | Set-AzResource -ApiVersion $ApiVersion -Force
+    }
+}
+
+function SetCors($resourceGroupName, $functionAppName, $allowOrigin) {
+
     ## disable remote debugging 
-    $targetResource.Properties.remoteDebuggingEnabled = "False"
-    $targetResource.Properties.ftpsState = "Disabled"
+    ## disable ftp
 
-    ## disable cors ##
+    $targetResource = Get-AzResource -ResourceGroupName $resourceGroupName -ResourceType Microsoft.Web/sites/config -ResourceName $functionAppName -ApiVersion $ApiVersion
+    
+    if ($null -ne $targetResource)
+    {
+        ## disable remote debugging 
+        $targetResource.Properties.cors = @{allowedOrigins =  @($allowOrigin)}
 
-    $targetResource | Set-AzResource -ApiVersion $ApiVersion -Force
+        ## disable cors ##
+        $targetResource | Set-AzResource -ApiVersion $ApiVersion -Force
+    }
+}
+
+
+function GetFunctionAppInfo($resourceGroupName, $functionAppName) {
+
+    ## disable remote debugging 
+    ## disable ftp
+
+    $targetResource = Get-AzResource -ResourceGroupName $resourceGroupName -ResourceType Microsoft.Web/sites/config -ResourceName $functionAppName -ApiVersion $ApiVersion
+    
+    if ($null -ne $targetResource)
+    {
+       Write-Host($targetResource)
+    }
+    else 
+    {
+        Write-Host("")
+    }
+}
+
+
+function SecureFunctionNetwork($resourceGroupName, $functionAppName) { 
+    # Apply ip restriction 
+}
+
+function SecureCors($resourceGroupName, $functionAppName) { 
+
 }
 
 function SetAppSetting($functionAppName, $resourceGroupName, [hashtable] $functionAppSettings) {
@@ -159,4 +207,4 @@ function SetAppSetting($functionAppName, $resourceGroupName, [hashtable] $functi
     $webApp = Set-AzWebApp @setWebAppParams
 }
 
-Export-ModuleMember -Function SecureFunctionApp, CreateResourceGroup, GetAccessToken, CreateFunctionApp, CreateServicePlan, DeployAppFunction, SetAppSetting, CreateEventSubscriptionEventHook, ApplySecurityPolicy
+Export-ModuleMember -Function GetFunctionAppInfo, SetCors, SecureFunctionApp, CreateResourceGroup, GetAccessToken, CreateFunctionApp, CreateServicePlan, DeployAppFunction, SetAppSetting, CreateEventSubscriptionEventHook, ApplySecurityPolicy
