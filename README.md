@@ -26,7 +26,6 @@ Example :-
 
 > SetCors $resourcegorupName $functionAppName $allowOrigin 
 
-
 ### Change your app settings 
 
 SetAppSetting allows you to update your app settings. $settings parameter is a hastable. 
@@ -34,24 +33,11 @@ SetAppSetting allows you to update your app settings. $settings parameter is a h
 > SetAppSetting $functionAppName $resourceGroup, $settings) 
 
 
-### Getting master key from function app 
+### Configure App Settings 
 
-token=$(/usr/bin/az account get-access-token -o tsv --query accessToken)
+Here you need to provide function app name, resource group and then settings infp 
 
-echo "token content: $token"
-
-azFuncAccessToken=$(curl "https://$(env)$(fawebhookuri).scm.azurewebsites.net/api/functions/admin/masterkey" -H "Authorization : Bearer $token"  | jq -r  '.masterKey' )
-
-
-echo "setting up master key : $azFuncAccessToken"
-
-
-az eventgrid event-subscription create --name "mt9fileadaptersubscription" --source-resource-id "/subscriptions/$(Subscription_id)/resourceGroups/$(env)$(shared_resource_group_name)/providers/Microsoft.Storage/storageaccounts/$(env)$(shared_storage_account)" --endpoint  "https://$(env)$(fawebhookuri).azurewebsites.net/runtime/webhooks/EventGrid?functionName=MyFunctionAppName&code=$azFuncAccessToken" --endpoint-type webhook  --included-event-types Microsoft.Storage.BlobCreated  --subject-begins-with '/test'
-
-
-
-
-
+SetAppSetting $functionAppName $ResourceGroupnae @{ Testdata = "test4";Testdata2 = "test3"; FUNCTIONS_EXTENSION_VERSION  = '~2'}                                                          
 
 
 
