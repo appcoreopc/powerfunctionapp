@@ -37,7 +37,14 @@ SetAppSetting allows you to update your app settings. $settings parameter is a h
 
 Here you need to provide function app name, resource group and then settings infp 
 
-SetAppSetting $functionAppName $ResourceGroupnae @{ Testdata = "test4";Testdata2 = "test3"; FUNCTIONS_EXTENSION_VERSION  = '~2'}                                                          
+SetAppSetting $functionAppName $ResourceGroupnae @{ Testdata = "test4";Testdata2 = "test3"; FUNCTIONS_EXTENSION_VERSION  = '~2'}        
+
+
+### Get function app info 
+
+GetFunctionAppInfo $functionAppName $resourcegroupname
+
+
 
 
 
