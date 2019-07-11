@@ -24,7 +24,7 @@ Example
 
 Example :-
 
-> SetCors $resourcegorupName $functionAppName $allowOrigin 
+> SecureCors $resourcegorupName $functionAppName $allowOrigin 
 
 ### Change your app settings 
 
@@ -43,7 +43,6 @@ SetAppSetting $functionAppName $ResourceGroupnae @{ Testdata = "test4";Testdata2
 ### Get function app info 
 
 GetFunctionAppInfo $functionAppName $resourcegroupname
-
 
 
 
