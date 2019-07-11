@@ -45,13 +45,14 @@ function NewStorageAccount($storageName, $resourceGroupName, $location) {
     }
 }
 
-
 function CreateEventSubscriptionEventHook($resourcegroup, $functionName, $subscriptionTitle, $functionCodeName, $resourceId) {
   
     ## ForceAppSettingsAzureWebJobsSecretStorageType $resourcegroup $functionName
     
     $token = GetAccessToken  
+
     $azFuncAccessToken = Invoke-WebRequest "https://$functionName.scm.azurewebsites.net/api/functions/admin/masterkey" -Headers @{"Authorization"="Bearer $token"}
+
     Write-Host($azFuncAccessToken.masterKey)    
     
     $subcriptionStatus = New-AzEventGridSubscription -EventSubscriptionName $subscriptionTitle -ResourceId "$resourceId" -endpoint "https://$functionName.azurewebsites.net/runtime/webhooks/EventGrid?functionName=$functionCodeName&code=$azFuncAccessToken" -EndpointType webhook -IncludedEventType Microsoft.Storage.BlobCreated 
@@ -131,7 +132,7 @@ function DeployAppFunction($functionAppName, $resourceGroup, $filePath) {
     Invoke-RestMethod -Uri $apiUrl -InFile $filePath -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -Method Post -ContentType "multipart/form-date";
 }
 
-function SecureFunctionApp($resourceGroupName, $functionAppName) {
+function SecureFunctionApp($resourceGroupName, $functionAppName, $targetOrigin) {
 
     ## disable remote debugging 
     ## disable ftp
@@ -143,14 +144,14 @@ function SecureFunctionApp($resourceGroupName, $functionAppName) {
         ## disable remote debugging 
         $targetResource.Properties.remoteDebuggingEnabled = "False"
         $targetResource.Properties.ftpsState = "Disabled"
-        $targetResource.Properties.cors = @{allowedOrigins =  @("http://example.net")}
+        $targetResource.Properties.cors = @{allowedOrigins =  @("$targetOrigin")}
 
         ## disable cors ##
         $targetResource | Set-AzResource -ApiVersion $ApiVersion -Force
     }
 }
 
-function SetCors($resourceGroupName, $functionAppName, $allowOrigin) {
+function SecureCors($resourceGroupName, $functionAppName, $allowOrigin) {
 
     ## disable remote debugging 
     ## disable ftp
@@ -168,7 +169,7 @@ function SetCors($resourceGroupName, $functionAppName, $allowOrigin) {
 }
 
 
-function GetFunctionAppInfo($resourceGroupName, $functionAppName) {
+function GetFunctionAppInfo($functionAppName, $resourceGroupName) {
 
     ## disable remote debugging 
     ## disable ftp
@@ -181,16 +182,14 @@ function GetFunctionAppInfo($resourceGroupName, $functionAppName) {
     }
     else 
     {
-        Write-Host("")
+        Write-Host("No matching resources found.")
     }
 }
 
 
-function SecureFunctionNetwork($resourceGroupName, $functionAppName) { 
-    # Apply ip restriction 
-}
+function SecureNetwork($resourceGroupName, $functionAppName) { 
 
-function SecureCors($resourceGroupName, $functionAppName) { 
+    # Apply ip restriction 
 
 }
 
@@ -207,4 +206,4 @@ function SetAppSetting($functionAppName, $resourceGroupName, [hashtable] $functi
     $webApp = Set-AzWebApp @setWebAppParams
 }
 
-Export-ModuleMember -Function GetFunctionAppInfo, SetCors, SecureFunctionApp, CreateResourceGroup, GetAccessToken, CreateFunctionApp, CreateServicePlan, DeployAppFunction, SetAppSetting, CreateEventSubscriptionEventHook, ApplySecurityPolicy
+Export-ModuleMember -Function GetFunctionAppInfo, SecureCors, SecureFunctionApp, CreateResourceGroup, GetAccessToken, CreateFunctionApp, CreateServicePlan, DeployAppFunction, SetAppSetting, CreateEventSubscriptionEventHook, ApplySecurityPolicy
