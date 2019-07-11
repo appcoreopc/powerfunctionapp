@@ -13,54 +13,36 @@ $storageAccountName = "myappstorageaccount"
 
 CreateFunctionApp $resourceGroupName, $location, $functionAppName, $storageAccountName
 
-## Secure function app 
+### Secure function app 
 
 SecureFunctionapp - Typically allows us to disable remote logging and ftps. 
 
-## Change your app settings 
+Example 
+> SecureFunctionapp $resourcegorupName $functionAppName
 
-Go to the root folder and then import entire module by using the following command :- 
+### Secure CORS 
 
-import-module ./powerfunctionapp
+Example :-
 
-####################################################
+> SecureCors $resourcegorupName $functionAppName $allowOrigin 
 
+### Change your app settings 
 
-How do i get multiple module to load (with the module in different directory)
+SetAppSetting allows you to update your app settings. $settings parameter is a hastable. 
 
-1. setup your main RootModule = 'test.psm1', which in turn, import other modules 
-
-Import-Module ./util/util.psm1
-
-After that, once you have imported, you also export to function 
-
-Export-ModuleMember -Function Sayhello, SayHello2, SayHello3, GoodBye, GoodBye2, GoodBye3
-
-####################################################
+> SetAppSetting $functionAppName $resourceGroup, $settings) 
 
 
-Getting master key from function app 
+### Configure App Settings 
 
-token=$(/usr/bin/az account get-access-token -o tsv --query accessToken)
+Here you need to provide function app name, resource group and then settings infp 
 
-echo "token content: $token"
-
-azFuncAccessToken=$(curl "https://$(env)$(fawebhookuri).scm.azurewebsites.net/api/functions/admin/masterkey" -H "Authorization : Bearer $token"  | jq -r  '.masterKey' )
+SetAppSetting $functionAppName $ResourceGroupnae @{ Testdata = "test4";Testdata2 = "test3"; FUNCTIONS_EXTENSION_VERSION  = '~2'}        
 
 
-echo "setting up master key : $azFuncAccessToken"
+### Get function app info 
 
-
-az eventgrid event-subscription create --name "mt9fileadaptersubscription" --source-resource-id "/subscriptions/$(Subscription_id)/resourceGroups/$(env)$(shared_resource_group_name)/providers/Microsoft.Storage/storageaccounts/$(env)$(shared_storage_account)" --endpoint  "https://$(env)$(fawebhookuri).azurewebsites.net/runtime/webhooks/EventGrid?functionName=MyFunctionAppName&code=$azFuncAccessToken" --endpoint-type webhook  --included-event-types Microsoft.Storage.BlobCreated  --subject-begins-with '/test'
-
-
-
-
-https://www.udemy.com/hands-on-penetration-testing-labs-30/
-https://www.udemy.com/computer-hacking-forensic-investigator/#reviews
-https://www.udemy.com/cyber-security-advanced-persistent-threat-defender/
-
-
+GetFunctionAppInfo $functionAppName $resourcegroupname
 
 
 
