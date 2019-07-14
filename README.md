@@ -40,10 +40,11 @@ Here you need to provide function app name, resource group and then settings inf
 SetAppSetting $functionAppName $ResourceGroupnae @{ Testdata = "test4";Testdata2 = "test3"; FUNCTIONS_EXTENSION_VERSION  = '~2'}        
 
 
-### Get function app info 
+### Get function app info
+
+Shows info about a functionapp
 
 GetFunctionAppInfo $functionAppName $resourcegroupname
-
 
 
 
