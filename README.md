@@ -50,6 +50,15 @@ GetFunctionAppInfo $functionAppName $resourcegroupname
 
 
 
+Some terraform links 
+
+https://github.com/terraform-providers/terraform-provider-azurerm/issues/917
+
+https://www.terraform.io/docs/providers/azurerm/r/app_service_plan.html#app_service_environment_id
+
+
+
+
 
 
 
